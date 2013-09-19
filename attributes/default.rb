@@ -1,0 +1,1 @@
+default[:certificate][:directory] = '/etc/ssl/certs'
