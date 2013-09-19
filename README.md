@@ -12,7 +12,7 @@ This is behavior is achieved by checking the `valid_hostnames` array for both
 the hostname passed in and the short hostname (`foo` in `foo.bar.com`) replaced
 with `*` to find any wildcard domain matches.  For example, `foo.bar.com` would
 match any certificate in all data bag items with a `valid_hostnames` item value
-of `foo.bar.com` or `*.bar.com`
+of `foo.bar.com` or `*.bar.com`.
 
 The `:create` action will by default create the certificate file, the key file,
 and if specified, the cacert file using the following format:
@@ -46,6 +46,12 @@ The certificate file for `foo.bar.com` with a default SSL path of
 `/etc/ssl/certs` would be:
 
     /etc/ssl/certs/foo.bar.com.cert.pem
+
+If `foo.bar.com` matches a wildcard certificate of `*.bar.com`, the wildcard
+pattern will be used to create the file name. The certificate file with the
+default SSL path would be:
+
+    /etc/ssl/certs/bar.com.cert.pem
 
 Data bag item format
 --------------------
