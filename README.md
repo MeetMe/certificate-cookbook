@@ -1,7 +1,7 @@
 Certificate Cookbook
 ====================
 This cookbook contains LWRPs for creating and deleting SSL Certificates stored
-in a data bag named `certificates`.
+in a data bag named "certificates".
 
 When used, the fully qualified hostname (`foo.bar.com` not just `foo`) for the
 certificate is passed into the LWRP block and all items in the data bag are
@@ -17,9 +17,9 @@ of `foo.bar.com` or `*.bar.com`
 The `:create` action will by default create the certificate file, the key file,
 and if specified, the cacert file using the following format:
 
-    node[:certificate][:directory]/filtered_hostname.cert.pem
-    node[:certificate][:directory]/filtered_hostname.key.pem
-    node[:certificate][:directory]/filtered_hostname.cacert.pem
+ - `node[:certificate][:directory]/filtered_hostname.cert.pem`
+ - `node[:certificate][:directory]/filtered_hostname.key.pem`
+ - `node[:certificate][:directory]/filtered_hostname.cacert.pem`
 
 The `filtered_hostname` value is filtered by the following regex:
 
@@ -33,22 +33,32 @@ And would yield the following values:
     <th>Filtered</th>
   </tr>
   <tr>
-    <td><tt>foo.bar.com</td>
-    <td><tt>foo.bar.com</td>
+    <td>foo.bar.com</td>
+    <td>foo.bar.com</td>
   </tr>
   <tr>
-    <td><tt>*.bar.com</tt></td>
-    <td><tt>bar.com</tt></td>
+    <td>*.bar.com</td>
+    <td>bar.com</td>
   </tr>
 </table>
 
 The certificate file for `foo.bar.com` with a default SSL path of
 `/etc/ssl/certs` would be:
 
-    `/etc/ssl/certs/foo.bar.com.cert.pem`
+    /etc/ssl/certs/foo.bar.com.cert.pem
 
-Data bag format
----------------
+Data bag item format
+--------------------
+The data bag item has the following format:
+
+ - id: The data bag item id
+ - certificate: A string containing the certificate
+ - key: A string containing the certificate key
+ - valid_hostnames: An array of strings containing valid hostnames for the certificate
+ - cacert: An optional CA certificate (or chained certificates)
+ - issued: Currently for informational purposes only, a string containing the timestamp for when the certificate was created
+ - expiration: Currently for informational purposes only, a string containing the timestamp for when the certificate expires
+
 The `certificate`, `key` and `valid_hostname` values are required.
 
     {
@@ -58,7 +68,7 @@ The `certificate`, `key` and `valid_hostname` values are required.
       "valid_hostnames": ["some-domain.net", "*.some-domain.net"],
       "cacert": "-----BEGIN CERTIFICATE-----\nCA CERT VALUE - CAN BE CHAINED CERTS\n-----END CERTIFICATE-----\n",
       "issued": "Sep 18 00:10:52 2013 GMT",
-      "expiration": "Sep 18 00:10:52 2023 GMT",
+      "expiration": "Sep 18 00:10:52 2023 GMT"
     }
 
 Usage
@@ -98,7 +108,7 @@ Attributes
     <td><tt>[:certificate][:directory]</tt></td>
     <td>String</td>
     <td>Path to install certificates in by default</td>
-    <td></td>
+    <td>/etc/ssl/certs</td>
   </tr>
 </table>
 

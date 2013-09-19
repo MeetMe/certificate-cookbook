@@ -5,28 +5,30 @@ end
 
 def load_current_resource
   @current_resource = Chef::Resource::CertificateFiles.new(@new_resource.name)
+  [base_hostname(@new_resource.hostname),
+   base_hostname(wildcard(@new_resource.hostname))].each do |hostname|
+    cert_file, key_file, cacert_file = create_paths(hostname, @new_resource.path)
+    if ::File.exists?(cert_file)
+      @current_resource.certificate = ::File.read(cert_file)
+    end
 
-  cert_file, key_file, cacert_file = create_paths(@new_resource.hostname,
-                                                  @new_resource.path)
+    if ::File.exists?(key_file)
+      @current_resource.key = ::File.read(key_file)
+    end
 
-  if ::File.exists?(cert_file)
-    @current_resource.certificate = ::File.read(cert_file)
-  end
-
-  if ::File.exists?(key_file)
-    @current_resource.key = ::File.read(key_file)
-  end
-
-  if ::File.exists?(cacert_file)
-    @current_resource.cacert = ::File.read(cacert_file)
+    if ::File.exists?(cacert_file)
+      @current_resource.cacert = ::File.read(cacert_file)
+    end
   end
 end
-
 
 
 action :create do
   # Initialize, finding the right data bag item or raising an exception
   cert, cert_file, key_file, cacert_file = find_certificate
+
+  # Keep track of the files created for the attributes
+  files = [cert_file, key_file]
 
   # Create the certificate file unless it exists and the values are the same
   unless @current_resource.certificate.eql?(cert['certificate'])
@@ -47,13 +49,21 @@ action :create do
     converge_by("create cacert file #{cacert_file}") do
       create_file(cacert_file, cert['cacert'])
     end
+    files << cacert_file
   end
+
+  # Assign attributes for the certificate that can be used for monitoring
+  node.override[:certificate][cert['id']][:issued] = cert['issued']
+  node.override[:certificate][cert['id']][:created] = cert['expiration']
+  node.override[:certificate][cert['id']][:fqdns] = cert['valid_hostnames']
+  node.override[:certificate][cert['id']][:files] = files
+
 end
 
 
 action :delete do
   # Initialize, finding the right data bag item or raising an exception
-  cert, cert_file, key_file, cacert_file = find_certificate
+  unused, cert_file, key_file, cacert_file = find_certificate
 
   if ::File.exists?(cert_file)
     converge_by("delete certificate file #{cert_file}") do
@@ -75,7 +85,6 @@ action :delete do
 end
 
 
-
 private
 
 
@@ -95,16 +104,14 @@ end
 
 
 def create_paths(hostname, path)
-  base_file = base_hostname(hostname)
-  ["#{path}/#{base_file}.cert.pem",
-   "#{path}/#{base_file}.key.pem",
-   "#{path}/#{base_file}.cacert.pem"]
+  ["#{path}/#{hostname}.cert.pem", "#{path}/#{hostname}.key.pem", "#{path}/#{hostname}.cacert.pem"]
 end
 
 
 def find_certificate
-  values = [search_data_bag(@new_resource.hostname)]
-  values.concat(create_paths(@new_resource.hostname, @new_resource.path))
+  base_hostname, cert = search_data_bag(@new_resource.hostname)
+  values = [cert]
+  values.concat(create_paths(base_hostname, @new_resource.path))
   values
 end
 
@@ -127,7 +134,7 @@ def search_data_bag(hostname)
       cert = data_bag_item(:certificates, item_id)
       if cert['valid_hostnames'].include?(value)
         Chef::Log.debug("#{@new_resource} found certificate for #{value} in #{item_id}")
-        return cert
+        return [base_hostname(value), cert]
       end
     end
   end
