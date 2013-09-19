@@ -53,10 +53,10 @@ action :create do
   end
 
   # Assign attributes for the certificate that can be used for monitoring
-  node.override[:certificate][cert['id']][:issued] = cert['issued']
-  node.override[:certificate][cert['id']][:created] = cert['expiration']
-  node.override[:certificate][cert['id']][:fqdns] = cert['valid_hostnames']
-  node.override[:certificate][cert['id']][:files] = files
+  node.override[:certificate][:installed][cert['id']][:issued] = cert['issued']
+  node.override[:certificate][:installed][cert['id']][:expiration] = cert['expiration']
+  node.override[:certificate][:installed][cert['id']][:fqdns] = cert['valid_hostnames']
+  node.override[:certificate][:installed][cert['id']][:files] = files
 
 end
 

@@ -112,6 +112,38 @@ Attributes
   </tr>
 </table>
 
+Automatic Attributes
+--------------------
+Once a certificate is installed, the following attributes will be available for
+the node where ID is the data bag item ID for the certificate.
+
+<table>
+  <tr>
+    <th>Key</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><tt>[:certificate][:installed][ID][:issued]</tt></td>
+    <td>String</td>
+    <td>The timestamp from when the certificate was issued</td>
+  </tr>
+  <tr>
+    <td><tt>[:certificate][:installed][ID][:expiration]</tt></td>
+    <td>String</td>
+    <td>The timestamp of when the certificate expires</td>
+  </tr>
+  <tr>
+    <td><tt>[:certificate][:installed][ID][:files]</tt></td>
+    <td>Array</td>
+    <td>The certificate files installed</td>
+  </tr>
+  <tr>
+    <td><tt>[:certificate][:installed][ID][:fqdns]</tt></td>
+    <td>String</td>
+    <td>Fully-qualified domain names for the certificate</td>
+  </tr>
+</table>
 
 License and Author
 ------------------
